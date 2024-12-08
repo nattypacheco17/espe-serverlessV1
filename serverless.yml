@@ -1,0 +1,66 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: naty317
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: espe-serverless
+frameworkVersion: "4"
+provider:
+  name: aws
+  runtime: nodejs20.x
+  iamRoleStatements:
+    - Effect: Allow
+      Action: 
+        - dynamodb:*
+      Resource: 
+        - arn:aws:dynamodb:us-east-1:954976286100:table/TaskTable
+  httpApi:
+    cors:
+      allowedOrigins:
+        - http://localhost:3000
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowCredentials: true
+functions:
+  hello:
+    handler: src/handler.hello
+    events:
+      - httpApi:
+          path: /
+          method: get
+  createTask:
+    handler: src/addTask.addTask
+    events:
+      - httpApi:
+          path: /task
+          method: post
+  getTask:
+    handler: src/getTask.getTask
+    events:
+      - httpApi:
+          path: /task
+          method: get        
+  updateTask:
+    handler: src/updateTask.updateTask
+    events:
+      - httpApi:
+          path: /task/{id}
+          method: put
+  deleTask:
+    handler: src/deleteTask.deleteTask
+    events:
+      - httpApi:
+          path: /tasks/{id}
+          method: delete
+resources:
+  Resources:
+    TaskTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: "TaskTable"
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
